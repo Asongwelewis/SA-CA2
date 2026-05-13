@@ -1,0 +1,27 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  name: helep-kafka
+  namespace: kafka
+spec:
+  kafka:
+    replicas: 1
+    config:
+      auto.create.topics.enable: "false"
+    storage:
+      type: persistent-claim
+      size: 1Gi
+      deleteClaim: false
+    listeners:
+      - name: plain
+        port: 9092
+        type: internal
+        tls: false
+  zookeeper:
+    replicas: 1
+    storage:
+      type: persistent-claim
+      size: 1Gi
+      deleteClaim: false
+  entityOperator:
+    topicOperator: {}

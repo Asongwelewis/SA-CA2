@@ -1,0 +1,30 @@
+replicaCount: 1
+
+image:
+  repository: ""
+  tag: ""
+  pullPolicy: IfNotPresent
+
+service:
+  port: 8005
+
+kafka:
+  bootstrap: ""
+
+env:
+  jwtSecret: ""
+  matcher: ""
+
+db:
+  path: /data/analytics.db
+
+persistence:
+  enabled: true
+  size: 1Gi
+  accessMode: ReadWriteOnce
+  storageClass: ""
+
+autoscaling:
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 70

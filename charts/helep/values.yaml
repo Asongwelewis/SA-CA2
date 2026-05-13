@@ -1,0 +1,114 @@
+user-service:
+  replicaCount: 1
+  image:
+    repository: asongwelewis/helep-user-service
+    tag: "0.1.0"
+    pullPolicy: IfNotPresent
+  service:
+    port: 8001
+  kafka:
+    bootstrap: helep-kafka-kafka-bootstrap.kafka.svc.cluster.local:9092
+  env:
+    jwtSecret: "helep-jwt-secret-2026-change-before-prod"
+    matcher: ""
+  db:
+    path: /data/user.db
+  persistence:
+    enabled: true
+    size: 1Gi
+    accessMode: ReadWriteOnce
+    storageClass: ""
+  ingress:
+    host: helep.local
+
+sos-service:
+  replicaCount: 1
+  image:
+    repository: asongwelewis/helep-sos-service
+    tag: "0.1.0"
+    pullPolicy: IfNotPresent
+  service:
+    port: 8002
+  kafka:
+    bootstrap: helep-kafka-kafka-bootstrap.kafka.svc.cluster.local:9092
+  env:
+    jwtSecret: "helep-jwt-secret-2026-change-before-prod"
+    matcher: ""
+  db:
+    path: /data/sos.db
+  persistence:
+    enabled: true
+    size: 1Gi
+    accessMode: ReadWriteOnce
+    storageClass: ""
+  ingress:
+    host: helep.local
+
+dispatch-service:
+  replicaCount: 1
+  image:
+    repository: asongwelewis/helep-dispatch-service
+    tag: "0.1.0"
+    pullPolicy: IfNotPresent
+  service:
+    port: 8003
+  kafka:
+    bootstrap: helep-kafka-kafka-bootstrap.kafka.svc.cluster.local:9092
+  env:
+    jwtSecret: "helep-jwt-secret-2026-change-before-prod"
+    matcher: "nearest"
+  db:
+    path: /data/dispatch.db
+  persistence:
+    enabled: true
+    size: 1Gi
+    accessMode: ReadWriteOnce
+    storageClass: ""
+  ingress:
+    host: helep.local
+
+notification-service:
+  replicaCount: 1
+  image:
+    repository: asongwelewis/helep-notification-service
+    tag: "0.1.0"
+    pullPolicy: IfNotPresent
+  service:
+    port: 8004
+  kafka:
+    bootstrap: helep-kafka-kafka-bootstrap.kafka.svc.cluster.local:9092
+  env:
+    jwtSecret: "helep-jwt-secret-2026-change-before-prod"
+    matcher: ""
+  db:
+    path: /data/notification.db
+  persistence:
+    enabled: true
+    size: 1Gi
+    accessMode: ReadWriteOnce
+    storageClass: ""
+  ingress:
+    host: helep.local
+
+analytics-service:
+  replicaCount: 1
+  image:
+    repository: asongwelewis/helep-analytics-service
+    tag: "0.1.0"
+    pullPolicy: IfNotPresent
+  service:
+    port: 8005
+  kafka:
+    bootstrap: helep-kafka-kafka-bootstrap.kafka.svc.cluster.local:9092
+  env:
+    jwtSecret: "helep-jwt-secret-2026-change-before-prod"
+    matcher: ""
+  db:
+    path: /data/analytics.db
+  persistence:
+    enabled: true
+    size: 1Gi
+    accessMode: ReadWriteOnce
+    storageClass: ""
+  ingress:
+    host: helep.local

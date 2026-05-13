@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analytics-service
+  labels:
+    app: analytics-service
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: analytics-service
+  template:
+    metadata:
+      labels:
+        app: analytics-service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "{{ .Values.service.port }}"
+    spec:
+      containers:
+        - name: analytics-service
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.port }}
+          env:
+            - name: SERVICE_PORT
+              value: "{{ .Values.service.port }}"
+            - name: KAFKA_BOOTSTRAP
+              valueFrom:
+                configMapKeyRef:
+                  name: analytics-service-config
+                  key: KAFKA_BOOTSTRAP
+            - name: DB_PATH
+              valueFrom:
+                configMapKeyRef:
+                  name: analytics-service-config
+                  key: DB_PATH
+            - name: MATCHER
+              valueFrom:
+                configMapKeyRef:
+                  name: analytics-service-config
+                  key: MATCHER
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: analytics-service-secret
+                  key: JWT_SECRET
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.service.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: {{ .Values.service.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          securityContext:
+            runAsUser: 10001
+            runAsNonRoot: true
+{{- if .Values.persistence.enabled }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: analytics-service-pvc
+{{- end }}

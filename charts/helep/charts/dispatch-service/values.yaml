@@ -1,0 +1,30 @@
+replicaCount: 1
+
+image:
+  repository: ""
+  tag: ""
+  pullPolicy: IfNotPresent
+
+service:
+  port: 8003
+
+kafka:
+  bootstrap: ""
+
+env:
+  jwtSecret: ""
+  matcher: "nearest"
+
+db:
+  path: /data/dispatch.db
+
+persistence:
+  enabled: true
+  size: 1Gi
+  accessMode: ReadWriteOnce
+  storageClass: ""
+
+autoscaling:
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 70

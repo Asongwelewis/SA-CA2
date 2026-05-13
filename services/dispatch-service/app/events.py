@@ -14,6 +14,7 @@ Partition keying:
 from __future__ import annotations
 import json
 import os
+import time
 from typing import Awaitable, Callable, Iterable
 
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
@@ -61,16 +62,41 @@ class CircuitBreaker:
         self.reset_after_s = reset_after_s
         self.fails = 0
         self.opened_at: float | None = None
+        self.half_open = False
+        self.probe_in_flight = False
 
     def allow(self) -> bool:
-        # TODO (student): implement open/half-open/closed state machine
+        if self.opened_at is None:
+            return True
+        elapsed = time.monotonic() - self.opened_at
+        if elapsed < self.reset_after_s:
+            return False
+        # half-open: allow a single probe request
+        if not self.half_open:
+            self.half_open = True
+            self.probe_in_flight = False
+        if self.probe_in_flight:
+            return False
+        self.probe_in_flight = True
         return True
 
     def record_success(self) -> None:
         self.fails = 0
+        self.opened_at = None
+        self.half_open = False
+        self.probe_in_flight = False
 
     def record_failure(self) -> None:
-        self.fails += 1
+        now = time.monotonic()
+        if self.opened_at is None:
+            self.fails += 1
+            if self.fails >= self.fail_threshold:
+                self.opened_at = now
+        else:
+            # half-open probe failed → open again
+            self.opened_at = now
+        self.half_open = False
+        self.probe_in_flight = False
 
 
 _breaker = CircuitBreaker()

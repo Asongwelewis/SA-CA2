@@ -1,0 +1,56 @@
+pipeline {
+  agent any
+  environment {
+    DOCKERHUB = "asongwelewis"
+    IMAGE_TAG = "0.1.0"
+  }
+  stages {
+    stage('Lint') {
+      steps {
+        sh 'pip install ruff && ruff check services/'
+      }
+    }
+    stage('Build') {
+      steps {
+        sh 'docker build -t $DOCKERHUB/helep-user-service:$IMAGE_TAG services/user-service/'
+        sh 'docker build -t $DOCKERHUB/helep-sos-service:$IMAGE_TAG services/sos-service/'
+        sh 'docker build -t $DOCKERHUB/helep-dispatch-service:$IMAGE_TAG services/dispatch-service/'
+        sh 'docker build -t $DOCKERHUB/helep-notification-service:$IMAGE_TAG services/notification-service/'
+        sh 'docker build -t $DOCKERHUB/helep-analytics-service:$IMAGE_TAG services/analytics-service/'
+      }
+    }
+    stage('Scan') {
+      steps {
+        sh 'trivy image --severity HIGH,CRITICAL --exit-code 1 $DOCKERHUB/helep-user-service:$IMAGE_TAG'
+        sh 'trivy image --severity HIGH,CRITICAL --exit-code 1 $DOCKERHUB/helep-sos-service:$IMAGE_TAG'
+        sh 'trivy image --severity HIGH,CRITICAL --exit-code 1 $DOCKERHUB/helep-dispatch-service:$IMAGE_TAG'
+        sh 'trivy image --severity HIGH,CRITICAL --exit-code 1 $DOCKERHUB/helep-notification-service:$IMAGE_TAG'
+        sh 'trivy image --severity HIGH,CRITICAL --exit-code 1 $DOCKERHUB/helep-analytics-service:$IMAGE_TAG'
+      }
+    }
+    stage('Push') {
+      steps {
+        sh 'docker push $DOCKERHUB/helep-user-service:$IMAGE_TAG'
+        sh 'docker push $DOCKERHUB/helep-sos-service:$IMAGE_TAG'
+        sh 'docker push $DOCKERHUB/helep-dispatch-service:$IMAGE_TAG'
+        sh 'docker push $DOCKERHUB/helep-notification-service:$IMAGE_TAG'
+        sh 'docker push $DOCKERHUB/helep-analytics-service:$IMAGE_TAG'
+      }
+    }
+    stage('Deploy') {
+      steps {
+        sh 'helm upgrade --install helep ./charts/helep -n helep'
+      }
+    }
+    stage('Smoke Test') {
+      steps {
+        sh 'curl -f http://helep.local/healthz'
+      }
+    }
+    stage('Prod Approval') {
+      steps {
+        input message: 'Deploy to prod?', ok: 'Yes'
+      }
+    }
+  }
+}

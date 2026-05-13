@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dispatch-service-config
+data:
+  KAFKA_BOOTSTRAP: "{{ .Values.kafka.bootstrap }}"
+  DB_PATH: "{{ .Values.db.path }}"
+  MATCHER: "{{ .Values.env.matcher }}"
